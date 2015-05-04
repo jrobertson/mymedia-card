@@ -10,14 +10,14 @@ class MyMediaCard < MyMedia::Base
   attr_reader :kvx
   
   def initialize(opt={}, public_type: 'kvx', media_type: public_type, 
-                                        config: nil, prefix: 'meta', ext: nil)
+                                                         config: nil, ext: nil)
     
     @public_type = public_type
     super(media_type: media_type, public_type: public_type, config: config)
     
     @media_src = "%s/media/%s" % [@home, public_type]
     @target_ext = '.xml'
-    @prefix = prefix
+
     @media_type = media_type
     @ext = ext
     
@@ -37,8 +37,13 @@ class MyMediaCard < MyMedia::Base
     desc.capitalize! unless desc[0] == desc[0].upcase
     filename = raw_name.downcase + ext
 
+    static_path = "%s/%s/%s" % [@public_type, \
+      Time.now.strftime('%Y/%b/%d').downcase, filename]
+    
+    raw_static_destination = "%s/%s/%s" % [@website, 'r',static_path]
+    
     summary = {title: desc, tags: tags.join(' ')}
-    body = {file: filename}    
+    body = {file: raw_static_destination}    
 
     kvx = Kvx.new({summary: summary, body: body}, attributes: {type: @media_type})
     meta_filename = Time.now.strftime('meta%d%m%yT%H%M') + '.txt'    
@@ -78,7 +83,7 @@ class MyMediaCard < MyMedia::Base
 
       end
 
-      if not File.basename(src_path)[/#{@prefix}\d{6}T\d{4}\.txt/] then
+      if not File.basename(src_path)[/meta\d{6}T\d{4}\.txt/] then
         
         xml_filename = File.basename(src_path).sub(/txt$/,'xml')
         FileUtils.cp destination, @home + "/#{@public_type}/" + xml_filename
@@ -126,6 +131,11 @@ class MyMediaCard < MyMedia::Base
 
     kvx.summary[:xslt] = @xsl unless kvx.item[:xslt]
     File.write destination, kvx.to_xml
+    
+    # copy the media file to the destination
+    destination = kvx.body[:file][/^https?:\/\/[^\/]+(.*)/,1]
+    file = destination[/[^\/]+$/]
+    FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
 
     [kvx, raw_msg]
   end
