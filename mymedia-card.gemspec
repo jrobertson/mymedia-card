@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'mymedia-card'
-  s.version = '0.1.1'
+  s.version = '0.1.2'
   s.summary = 'In the context of the MyMedia system it is used for publishing a media file using the Kvx XML format as the container.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/**/*.rb']

@@ -10,7 +10,7 @@ class MyMediaCard < MyMedia::Base
   attr_reader :kvx
   
   def initialize(opt={}, public_type: 'kvx', media_type: public_type, 
-                                        config: nil, prefix: 'k', ext: nil)
+                                        config: nil, prefix: 'meta', ext: nil)
     
     @public_type = public_type
     super(media_type: media_type, public_type: public_type, config: config)
