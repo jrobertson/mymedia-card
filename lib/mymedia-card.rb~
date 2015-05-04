@@ -5,6 +5,7 @@
 require 'mymedia'
 
 
+
 class MyMediaCard < MyMedia::Base
 
   attr_reader :kvx
