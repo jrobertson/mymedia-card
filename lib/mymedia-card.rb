@@ -7,14 +7,17 @@ require 'mymedia-kvx'
 
 class MyMediaCard < MyMediaKvx
 
+  attr_reader :txt_filepath
   
   def initialize(opt={}, public_type: 'kvx', media_type: public_type, 
-                                                         config: nil, ext: nil)
+                                                     config: nil, ext: 'txt')
     
     super(media_type: media_type, public_type: public_type, 
                                                     config: config, ext: ext)
     
     @prefix = 'meta'
+    @txt_filepath = File.join(@media_src, \
+                              Time.now.strftime('meta%d%m%yT%H%M') + '.txt' )
     
   end
 
@@ -41,10 +44,10 @@ class MyMediaCard < MyMediaKvx
     body = {file: raw_static_destination}    
 
     kvx = Kvx.new({summary: summary, body: body}, attributes: {type: @media_type})
-    meta_filename = Time.now.strftime('meta%d%m%yT%H%M') + '.txt'    
+    
     Dir.chdir @media_src
     
-    File.write meta_filename, kvx.to_s
+    File.write @txt_filepath, kvx.to_s
     
     FileUtils.mv raw_s, filename
   end
