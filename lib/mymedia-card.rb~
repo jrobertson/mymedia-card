@@ -38,7 +38,7 @@ class MyMediaCard < MyMediaKvx
     static_path = "%s/%s/%s" % [@public_type, \
       Time.now.strftime('%Y/%b/%d').downcase, filename]
     
-    raw_static_destination = "%s/%s/%s" % [@website, 'r',static_path]
+    raw_static_destination = "/r/%s" % [static_path]
     
     summary = {title: desc, tags: tags.join(' ')}
     body = {file: raw_static_destination}    
@@ -60,7 +60,7 @@ class MyMediaCard < MyMediaKvx
     kvx, raw_msg = super(src_path, destination)
     
     # copy the media file to the destination
-    destination = kvx.body[:file][/^https?:\/\/[^\/]+(.*)/,1]
+    destination = kvx.body[:file]
     file = destination[/[^\/]+$/]
     FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
     
