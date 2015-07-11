@@ -20,11 +20,11 @@ class MyMediaCard < MyMediaKvx
     
   end
 
-  def create_metadata_file
+  def create_metadata_file(static_file: false)
 
     raise "MyMediaCard: ext: must be supplied at initialize()" unless @ext
     
-    dir = DirToXML.new(@media_src)
+    dir = DirToXML.new(File.join(@media_src, 'raw'))
     raw_s = dir.select_by_ext(@ext).sort_by_lastmodified.last[:name]
     
     s,ext = raw_s.split(/(?=\.\w+$)/)
@@ -33,11 +33,21 @@ class MyMediaCard < MyMediaKvx
     tags = raw_tags ? raw_tags.split(/--/) : []
     desc = raw_name.gsub(/-/,' ')
     desc.capitalize! unless desc[0] == desc[0].upcase
-    
-    filename = raw_name.downcase + ext
 
-    static_path = "%s/%s/%s" % [@public_type, \
-      Time.now.strftime('%Y/%b/%d').downcase, filename]
+    static_path = if static_file then
+
+      @txt_filepath = File.join(@media_src, raw_name.downcase + '.txt' )
+      filename = raw_name.downcase + ext
+      "%s/raw/%s" % [@public_type, filename]
+      
+    else
+      
+      filename = raw_name.downcase + ext
+
+      "%s/%s/%s" % [@public_type, \
+        Time.now.strftime('%Y/%b/%d').downcase, filename]
+      
+    end
     
     raw_static_destination = "/r/%s" % [static_path]
     
@@ -49,7 +59,7 @@ class MyMediaCard < MyMediaKvx
     Dir.chdir @media_src
     File.write @txt_filepath, kvx.to_s
 
-    FileUtils.mv raw_s, filename
+    FileUtils.mv File.join('raw',raw_s), File.join('raw',filename)
   end
   
   private
@@ -70,12 +80,12 @@ class MyMediaCard < MyMediaKvx
       FileUtils.cp_r File.join(@media_src, subdir), File.join(@home, File.dirname(destination))
       
       if File.basename(destination) != subdir then
-        FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
+        FileUtils.cp File.join(@media_src, 'raw', file), File.join(@home, destination)
       end
       
     else
       
-      FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
+      FileUtils.cp File.join(@media_src, 'raw', file), File.join(@home, destination)
       
     end
     
