@@ -24,9 +24,14 @@ class MyMediaCard < MyMediaKvx
 
     raise "MyMediaCard: ext: must be supplied at initialize()" unless @ext
     
-    path = static_file ? File.join(@media_src, 'raw') : @media_src
-    
+    path = if static_file and @public_type == 'txt' then
+      File.join(@media_src, 'raw')
+    else
+      @media_src
+    end
+        
     dir = DirToXML.new(path)
+
     raw_s = dir.select_by_ext(@ext).sort_by_lastmodified.last[:name]
     
     s,ext = raw_s.split(/(?=\.\w+$)/)
@@ -40,7 +45,8 @@ class MyMediaCard < MyMediaKvx
 
       @txt_filepath = File.join(@media_src, raw_name.downcase + '.txt' )
       filename = raw_name.downcase + ext
-      "%s/raw/%s" % [@public_type, filename]
+      relpath = @public_type == 'txt' ? '/raw' : ''
+      "%s%s/%s" % [@public_type, relpath, filename]
       
     else
       
@@ -55,13 +61,13 @@ class MyMediaCard < MyMediaKvx
     
     summary = {title: desc, tags: tags.join(' ')}
     body = {file: raw_static_destination}    
-
+# 
     kvx = Kvx.new({summary: summary, body: body}, \
                                              attributes: {type: @media_type})
     Dir.chdir @media_src
     File.write @txt_filepath, kvx.to_s
 
-    Dir.chdir 'raw' if static_file
+    Dir.chdir 'raw' if static_file and @publlic_type == 'txt'
 
     FileUtils.mv raw_s, filename
   end

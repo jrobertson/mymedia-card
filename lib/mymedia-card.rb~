@@ -16,7 +16,7 @@ class MyMediaCard < MyMediaKvx
                                                     config: config, ext: ext)    
     @prefix = 'meta'
     @txt_filepath = File.join(@media_src, \
-                              Time.now.strftime('meta%d%m%yT%H%M') + '.txt' )
+                              Time.now.strftime('meta%d%m%yT%H%M') + '.txt' )    
     
   end
 
@@ -24,7 +24,9 @@ class MyMediaCard < MyMediaKvx
 
     raise "MyMediaCard: ext: must be supplied at initialize()" unless @ext
     
-    dir = DirToXML.new(File.join(@media_src, 'raw'))
+    path = static_file ? File.join(@media_src, 'raw') : @media_src
+    
+    dir = DirToXML.new(path)
     raw_s = dir.select_by_ext(@ext).sort_by_lastmodified.last[:name]
     
     s,ext = raw_s.split(/(?=\.\w+$)/)
@@ -59,7 +61,9 @@ class MyMediaCard < MyMediaKvx
     Dir.chdir @media_src
     File.write @txt_filepath, kvx.to_s
 
-    FileUtils.mv File.join('raw',raw_s), File.join('raw',filename)
+    Dir.chdir 'raw' if static_file
+
+    FileUtils.mv raw_s, filename
   end
   
   private
@@ -71,7 +75,8 @@ class MyMediaCard < MyMediaKvx
 
     # copy the media file to the destination
     destination = kvx.body[:file]
-    file = File.basename(destination)
+
+    file = destination[/(raw\/)?[^\/]+$/]
     
     subdir = file[/.*(?=\.\w+$)|.*/]
     
@@ -80,12 +85,12 @@ class MyMediaCard < MyMediaKvx
       FileUtils.cp_r File.join(@media_src, subdir), File.join(@home, File.dirname(destination))
       
       if File.basename(destination) != subdir then
-        FileUtils.cp File.join(@media_src, 'raw', file), File.join(@home, destination)
+        FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
       end
       
     else
       
-      FileUtils.cp File.join(@media_src, 'raw', file), File.join(@home, destination)
+      FileUtils.cp File.join(@media_src, file), File.join(@home, destination)
       
     end
     
