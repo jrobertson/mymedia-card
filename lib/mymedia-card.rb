@@ -2,7 +2,15 @@
 
 # file: mymedia-card.rb
 
-require 'mymedia-kvx'
+
+require 'requestor'
+
+code = Requestor.read('http://rorbuilder.info/r/ruby') do |x| 
+  x.require 'mymedia-kvx'
+end
+eval code
+#require 'mymedia'
+
 
 
 class MyMediaCard < MyMediaKvx
@@ -67,7 +75,7 @@ class MyMediaCard < MyMediaKvx
     Dir.chdir @media_src
     File.write @txt_filepath, kvx.to_s
 
-    Dir.chdir 'raw' if static_file and @publlic_type == 'txt'
+    Dir.chdir 'raw' if static_file and @public_type == 'txt'
 
     FileUtils.mv raw_s, filename
   end
